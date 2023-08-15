@@ -1,6 +1,8 @@
 package com.github.client;
 
 import com.github.model.StockPrice;
+import com.github.sh0nk.matplotlib4j.Plot;
+import com.github.sh0nk.matplotlib4j.PythonExecutionException;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -51,9 +53,23 @@ public class AlphaVantageClient {
         return client.newCall(request).execute();
     }
 
-    public static void main(String[] args) throws IOException, ParseException {
+    public static void main(String[] args) throws IOException, ParseException, PythonExecutionException {
         // Create a dummy dataset
         List<StockPrice> list = fetchDailyPrice("AAPL");
+        Plot plt = Plot.create();
+        List<Long> dates = list.stream().map(StockPrice::getDate).map(LocalDate::toEpochDay).toList();
+        List<Double> prices = list.stream().map(StockPrice::getPrice).toList();
+        plt.plot().add(dates, prices);
+
+        // Set the chart title and axis labels
+        plt.title("Stock Price Chart");
+        plt.xlabel("Date");
+        plt.ylabel("Price");
+
+        plt.show();
+    }
+
+    private static void jfree(List<StockPrice> list) throws IOException {
         // Convert the selected data to a JFreeChart dataset
         DefaultCategoryDataset chartDataset = new DefaultCategoryDataset();
         list.forEach(row -> {
